@@ -1,0 +1,12 @@
+*.sqlite
+*.pyc
+__pycache__/
+.coverage
+.coveragerc
+.desc
+.idea
+db*
+geckodriver.log
+htmlcov
+migrations/
+venv
