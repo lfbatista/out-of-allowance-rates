@@ -4,8 +4,8 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-COUNTRIES = ["South Africa", "Brazil", "South Africa", "Portugal", "Chile", "Iceland", "China", "Madagascar"]
-# FIREFOXDRIVER_PATH = "/usr/bin/"
+with open("countries", "r") as f:
+    countries = f.read().splitlines()
 
 # Selenium Configs
 options = FirefoxOptions()
@@ -36,30 +36,25 @@ def get_allowance_rates(path):
     return pd.concat(df)
 
 
-# TODO
-#  - save country allowance rates into dictionary
-#  - move out prints from loop
-#  - add logger
-for i, country in enumerate(COUNTRIES):
-    search_country(COUNTRIES[i])
-    time.sleep(4)
+country_allowance_rates = dict()
+for country in countries:
+    search_country(country)
+    time.sleep(6)
+    if country in ("South Africa", "China", "Madagascar"):
+        dfs = get_allowance_rates("//table[@class='roaming-charges-table']")
 
-    if COUNTRIES[i] in ("South Africa", "China", "Madagascar"):
-        dfs = get_allowance_rates("/html/body/div[1]/div/div/div[2]/div[1]/div[1]/div[2]/div[1]/div/div/div/div/div["
-                                  "3]/section[2]/article[1]/section[2]/table")
-
-        print(f"Out of allowance rates for {country}: \n"
-              f"Calling back to the UK: {dfs.values[0][1]} \n"
-              f"Texting back to the UK: {dfs.values[2][1]} \n"
-              f"Receiving a call: {dfs.values[4][1]} \n"
-              f"Using internet data: {dfs.values[6][1]}\
-            ")
+        country_allowance_rates[country] = \
+            dfs.values[0][1].replace("\xa0", " "), \
+            dfs.values[2][1].replace("\xa0", " "), \
+            dfs.values[4][1].replace("\xa0", " "), \
+            dfs.values[6][1].replace("\xa0", " ")
     else:
-        dfs = get_allowance_rates("//div[1]/section[2]/div[2]/div/table")
+        dfs = get_allowance_rates("//div[@class='roaming-charges']/table")
 
-        print(f"Out of allowance rates for {country}: \n"
-              f"Calling back to the UK: {dfs.values[0][2]} \n"
-              f"Texting back to the UK: {dfs.values[2][2]} \n"
-              f"Receiving a call: {dfs.values[5][1]} \n"
-              f"Using internet data: {dfs.values[6][1]}\
-            ")
+        country_allowance_rates[country] = \
+            dfs.values[0][2].replace("\xa0", " "), \
+            dfs.values[2][2].replace("\xa0", " "), \
+            dfs.values[5][1].replace("\xa0", " "), \
+            dfs.values[6][1].replace("\xa0", " ")
+
+print(country_allowance_rates)
